@@ -147,6 +147,10 @@ void wait()
 
     // TODO : actually display towers here
     // ... maybe describe how to input commands too?
+    // ... actually also need to describe the win condition too.
+    // ... simplest approach for now would be to make win condition
+    // ... to have all disks, big-to-small from the bottom up, on the rhs pile
+    // ... fancier would be to allow same pile condition but either middle or rhs
 
     // valid characters : 'l', 'm', or 'r'
     // we don't validate move here... we do that in assess()
