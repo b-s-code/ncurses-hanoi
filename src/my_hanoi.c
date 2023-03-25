@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <string.h>
 #include <ncurses.h>
 
 /*
@@ -165,7 +167,26 @@ void assess()
     // two ways a move can be illegal:
     // (1) invalid command (e.g. "lx" instead of "lm"... 'x' does not refer to a valid pile)
     // (2) move may place a big disk on top of a smaller disk
+
+    const char* allowed_letters = "lmr";
+    char* from_pile = strchr(allowed_letters, command[0]);
+    char* to_pile = strchr(allowed_letters, command[1]);
     
+    // first we check (1)
+     
+    // handle case where invalid "from" or "to" pile is given
+    // and case where command doesn't actually specify moving anything
+    if (from_pile == NULL || to_pile == NULL || command[0] == command[1])
+    {
+        // just act like we didn't hear the command
+        game_state = waiting;
+        return;
+    }
+
+    // then we check (2)
+
+
+
     // TODO
 }
 
