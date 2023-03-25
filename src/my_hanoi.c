@@ -50,7 +50,24 @@ void stop_game();
 typedef enum disk pile[3];
 
 /*
-* there are two such datasets, to help manage transitions
+* returns -1 if the pile is full
+* otherwise 0, 1, or 2, where the number represents the topmost nulldisk's position
+*/
+int lowest_empty_slot(pile p);
+
+/*
+* "properly" means biggest to smallest, from the bottom up
+*/
+bool is_stacked_properly(pile p);
+
+/*
+* returns pointer to left, middle, or right pile
+* caller specifies whether they want candidate pile (1), or current pile (0)
+*/
+enum disk* get_pile_by_label(char c, bool should_return_candidate_pile);
+
+/*
+* there are two of these game datasets, to help manage transitions
 */
 struct game_state_data
 {
@@ -164,9 +181,10 @@ void wait()
 
 void assess()
 {
-    // two ways a move can be illegal:
+    // multiple ways a move can be illegal:
     // (1) invalid command (e.g. "lx" instead of "lm"... 'x' does not refer to a valid pile)
-    // (2) move may place a big disk on top of a smaller disk
+    // (2) move may move a null disk
+    // (3) move may place a big disk on top of a smaller disk
 
     const char* allowed_letters = "lmr";
     char* from_pile = strchr(allowed_letters, command[0]);
@@ -184,6 +202,20 @@ void assess()
     }
 
     // then we check (2)
+    
+    char pile_label_from = *from_pile;
+    char pile_label_to = *to_pile;
+
+    int lowest_empty_slot_from = lowest_empty_slot(get_pile_by_label(pile_label_from, 0 /* means current, not candidate*/));
+    int lowest_empty_slot_to = lowest_empty_slot(get_pile_by_label(pile_label_to, 0 /* means current, not candidate*/));
+    if (lowest_empty_slot_to == -1 || lowest_empty_slot_from == 2) // then player is trying to add to a full pile, or move a nulldisk, probably both
+    {
+        // just act like we didn't hear the command
+        game_state = waiting;
+        return;
+    }
+
+    // then we check (3)
 
 
 
@@ -214,4 +246,44 @@ void congratulate()
     // wait until a user has pressed a key to exit
     getch();
     game_state = exiting;
+}
+
+int lowest_empty_slot(pile p)
+{
+    if (p[0] != null_disk)
+    {
+        return -1;
+    }
+    else if (p[0] == null_disk)
+    {
+        return 0;
+    }
+    else if (p[1] == null_disk)
+    {
+        return 1;
+    }
+    return 2; // means pile is completely empty
+}
+
+bool is_stacked_properly(pile p)
+{
+    enum disk top = p[0], middle = p[1], bottom = p[2];
+    return bottom > middle && middle > top;
+}
+
+enum disk* get_pile_by_label(char c, bool should_return_candidate_pile)
+{
+    if (c == 'l')
+    {
+        return should_return_candidate_pile ? game_data_candidate_new.lhs : game_data_current.lhs;
+    }
+    else if (c == 'm')
+    {
+        return should_return_candidate_pile ? game_data_candidate_new.middle : game_data_current.middle;
+    }
+    else if (c == 'r')
+    {
+        return should_return_candidate_pile ? game_data_candidate_new.rhs : game_data_current.rhs;
+    }
+    return NULL;
 }
