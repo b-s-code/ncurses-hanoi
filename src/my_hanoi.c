@@ -51,7 +51,7 @@ typedef enum disk pile[3];
 
 /*
 * returns -1 if the pile is full
-* otherwise 0, 1, or 2, where the number represents the topmost nulldisk's position
+* otherwise 0, 1, or 2, where the number represents the topmost null_disk's position
 */
 int lowest_empty_slot(pile p);
 
@@ -208,7 +208,7 @@ void assess()
 
     int lowest_empty_slot_from = lowest_empty_slot(get_pile_by_label(pile_label_from, 0 /* means current, not candidate*/));
     int lowest_empty_slot_to = lowest_empty_slot(get_pile_by_label(pile_label_to, 0 /* means current, not candidate*/));
-    if (lowest_empty_slot_to == -1 || lowest_empty_slot_from == 2) // then player is trying to add to a full pile, or move a nulldisk, probably both
+    if (lowest_empty_slot_to == -1 || lowest_empty_slot_from == 2) // then player is trying to add to a full pile, or move a null_disk, probably both
     {
         // just act like we didn't hear the command
         game_state = waiting;
@@ -216,10 +216,31 @@ void assess()
     }
 
     // then we check (3)
+    
+    enum disk* source_pile = get_pile_by_label(pile_label_from, 0 /* means current, not candidate*/);
+    enum disk* destination_pile = get_pile_by_label(pile_label_to, 0 /* means current, not candidate*/);
+    
+    // "top" and "bottom" here refer to the disks that would be respectively on top/bottom if player's command is executed
 
+    // already handled case where source pile is empty earlier
+    int top_disk_position = lowest_empty_slot(source_pile) + 1;
+    enum disk top_disk = source_pile[top_disk_position];
+    int bottom_disk_position = lowest_empty_slot(destination_pile) + 1;
+    enum disk bottom_disk = destination_pile[bottom_disk_position];
 
-
-    // TODO
+    if (top_disk < bottom_disk || bottom_disk == null_disk) // criterion for legality of the move
+    {
+        // looks like the player has given a command worth executing
+        game_state = processing;
+        return;
+    }
+    else
+    {
+        // just act like we didn't hear the command
+        // would be nicer to give some feedback though
+        game_state = waiting;
+        return;
+    }
 }
 
 void process()
