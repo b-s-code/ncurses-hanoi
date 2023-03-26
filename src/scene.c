@@ -297,7 +297,7 @@ void print_base_plate_disk()
 
 void print_disk_scene()
 {
-    // need to select appropriate disk to print for 12 of these postions, based of a data structure
+    // need to select appropriate disk to print for 12 of these postions, based on a data structure
     // always print base plates though 
     printw("\n");
     printw("\n");
