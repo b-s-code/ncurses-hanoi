@@ -83,6 +83,17 @@ struct game_state_data
 */
 unsigned char command[2];
 
+/*
+* front-end functions
+*/
+void print_spacer();
+void print_null_disk();
+void print_red_disk();
+void print_orange_disk();
+void print_yellow_disk();
+void print_base_plate_disk();
+void print_disk_scene();
+
 int main()
 {
     start_game();
@@ -168,8 +179,7 @@ void greet()
     // wait until a user has pressed a key to start
     getch();
     
-    // TODO : move this to somewhere in the process() function
-    game_state = won;
+    game_state = waiting;
 }
 
 void wait()
@@ -177,7 +187,10 @@ void wait()
     // get rid of anything currently being displayed
     clear();
 
-    // TODO : actually display towers here
+    // display towers now
+    print_disk_scene();
+
+    // TODO :
     // ... maybe describe how to input commands too?
     // ... actually also need to describe the win condition too.
     // ... simplest approach for now would be to make win condition
@@ -261,8 +274,10 @@ void process()
     // this function assumes if it's being called, that
     // it is only ever being asked to make a valid transition
 
-    // TODO
-
+    // TODO : replace with sensible logic
+    clear();
+    printw("processing ...\n");
+    game_state = won;
 }
 
 void print_spacer()
@@ -297,26 +312,60 @@ void print_base_plate_disk()
 
 void print_disk_scene()
 {
-    // need to select appropriate disk to print for 12 of these postions, based on a data structure
-    // always print base plates though 
+    // get top row of left, middle and right piles
+    enum disk top_row[3] = {game_data_current.lhs[0], game_data_current.middle[0], game_data_current.rhs[0]};
+
+    // get middle row of left, middle and right piles
+    enum disk middle_row[3] = {game_data_current.lhs[1], game_data_current.middle[1], game_data_current.rhs[1]};
+
+    // get bottom row of left, middle and right piles
+    enum disk bottom_row[3] = {game_data_current.lhs[2], game_data_current.middle[2], game_data_current.rhs[2]};
+
+    void (*disk_printers[4])() = {print_null_disk, print_red_disk, print_orange_disk, print_yellow_disk};
+    
+    // print top row
     printw("\n");
     printw("\n");
-    print_spacer(); print_spacer(); print_red_disk(); print_spacer(); print_null_disk(); print_spacer(); print_null_disk();
+    print_spacer(); print_spacer();
+    for (int i = 0; i < 3; i++)
+    {
+        int disk_printer_index = top_row[i];
+        (*disk_printers[disk_printer_index])();
+        print_spacer();
+    }
     printw("\n");
-    print_spacer(); print_spacer(); print_orange_disk(); print_spacer(); print_null_disk(); print_spacer(); print_null_disk();
+
+    // print middle row    
+    print_spacer(); print_spacer();
+    for (int i = 0; i < 3; i++)
+    {
+        int disk_printer_index = middle_row[i];
+        (*disk_printers[disk_printer_index])();
+        print_spacer();
+    }
     printw("\n");
-    print_spacer(); print_spacer(); print_yellow_disk(); print_spacer(); print_yellow_disk(); print_spacer(); print_null_disk();
+    
+    // print bottom row    
+    print_spacer(); print_spacer();
+    for (int i = 0; i < 3; i++)
+    {
+        int disk_printer_index = bottom_row[i];
+        (*disk_printers[disk_printer_index])();
+        print_spacer();
+    }
     printw("\n");
+    
+    // print base plate row    
     print_spacer(); print_spacer(); print_base_plate_disk(); print_spacer(); print_base_plate_disk(); print_spacer(); print_base_plate_disk();
     printw("\n");
 }
+
+
 
 void congratulate()
 {
     // get rid of anything currently being displayed
     clear();
-
-    print_disk_scene();
 
     attron(COLOR_PAIR(1));
 
